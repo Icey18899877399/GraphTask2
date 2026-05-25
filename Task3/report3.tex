@@ -51,14 +51,16 @@
 \usepackage[colorlinks=true,linkcolor=paperblue,urlcolor=paperblue,citecolor=paperblue]{hyperref}
 
 \title{\LARGE\textbf{实验三：LZW 编解码实验}}
-\author{姓名：梁信、高居博、赵夕涵、刘嘉乐、黎玥含、赵欣瑶、罗雅丹、蓝浩宇}
+\author{姓名：梁信、高居博、赵夕涵、刘嘉乐、黎玥含、赵欣瑶、罗雅丹、蓝浩宇\\[2pt]
+\normalsize 第5组}
 \date{}
 
 \begin{document}
 \maketitle
 
 %=====================================================
-\section{实验目标}
+\section*{一、实验目标}
+\addcontentsline{toc}{section}{一、实验目标}
 %=====================================================
 
 本实验以 8 位灰度图像 \texttt{b8gray.bmp} 为输入，完成基于 LZW（Lempel--Ziv--Welch）的无损图像编解码。实验目标如下：
@@ -72,10 +74,11 @@
 \end{enumerate}
 
 %=====================================================
-\section{实验原理}
+\section*{二、实验原理}
+\addcontentsline{toc}{section}{二、实验原理}
 %=====================================================
 
-\subsection{LZW 编码思想}
+\subsection*{2.1\quad LZW 编码思想}
 
 LZW 是一种典型的自适应字典压缩算法。对于 8 位灰度图像，初始字典包含全部单字节灰度值：
 \begin{equation}
@@ -83,7 +86,7 @@ LZW 是一种典型的自适应字典压缩算法。对于 8 位灰度图像，�
 \end{equation}
 编码时按行扫描图像像素，持续寻找字典中已经出现的最长序列 $w$。若新序列 $w+k$ 尚未出现在字典中，则输出 $w$ 的编码，并将 $w+k$ 加入字典。随着编码进行，重复纹理、相邻灰度结构和局部模式会被更长的字典项表示，从而减少码字数量。
 
-\subsection{LZW 解码思想}
+\subsection*{2.2\quad LZW 解码思想}
 
 解码端采用与编码端相同的初始字典，并根据接收到的码字同步重建字典。设上一条解码序列为 $w$，当前码字对应序列为 $s$，则每读取一个新码字后，把
 \begin{equation}
@@ -95,7 +98,7 @@ LZW 是一种典型的自适应字典压缩算法。对于 8 位灰度图像，�
 \end{equation}
 只要编码和解码的字典更新规则一致，最终恢复的像素序列应与原图完全相同。
 
-\subsection{bpp 与熵}
+\subsection*{2.3\quad bpp 与熵}
 
 编码后每像素比特数（bits per pixel, bpp）用于衡量压缩表示的平均码长。本文同时给出仅统计 LZW 码流的 bpp 和包含文件头、调色板等元数据的 \texttt{C.dat} 文件 bpp：
 \begin{equation}
@@ -113,10 +116,11 @@ LZW 是一种典型的自适应字典压缩算法。对于 8 位灰度图像，�
 其中 $p_k$ 表示灰度级 $k$ 在原图中的出现概率。熵反映图像灰度分布的不确定性，是无损编码平均码长的重要参考下界。
 
 %=====================================================
-\section{方法描述}
+\section*{三、方法描述}
+\addcontentsline{toc}{section}{三、方法描述}
 %=====================================================
 
-\subsection{编码框图}
+\subsection*{3.1\quad 编码框图}
 
 \begin{figure}[H]
 \centering
@@ -150,7 +154,7 @@ LZW 是一种典型的自适应字典压缩算法。对于 8 位灰度图像，�
 \caption{LZW 编码流程图}
 \end{figure}
 
-\subsection{编码代码}
+\subsection*{3.2\quad 编码代码}
 
 编码程序位于 \texttt{Task3/main.cpp}。核心函数包括：
 \begin{itemize}[itemsep=2pt]
@@ -160,7 +164,7 @@ LZW 是一种典型的自适应字典压缩算法。对于 8 位灰度图像，�
   \item \texttt{CalculateEntropy}：统计原图灰度概率并计算信息熵。
 \end{itemize}
 
-\subsection{解码框图}
+\subsection*{3.3\quad 解码框图}
 
 \begin{figure}[H]
 \centering
@@ -193,7 +197,7 @@ LZW 是一种典型的自适应字典压缩算法。对于 8 位灰度图像，�
 \caption{LZW 解码流程图}
 \end{figure}
 
-\subsection{解码代码}
+\subsection*{3.4\quad 解码代码}
 
 解码程序同样位于 \texttt{Task3/main.cpp}。核心函数包括：
 \begin{itemize}[itemsep=2pt]
@@ -204,10 +208,11 @@ LZW 是一种典型的自适应字典压缩算法。对于 8 位灰度图像，�
 \end{itemize}
 
 %=====================================================
-\section{实验结果}
+\section*{四、实验结果}
+\addcontentsline{toc}{section}{四、实验结果}
 %=====================================================
 
-\subsection{图像恢复结果}
+\subsection*{4.1\quad 图像恢复结果}
 
 \begin{figure}[H]
   \centering
@@ -224,7 +229,7 @@ LZW 是一种典型的自适应字典压缩算法。对于 8 位灰度图像，�
   \label{fig:diff}
 \end{figure}
 
-\subsection{原图灰度分布}
+\subsection*{4.2\quad 原图灰度分布}
 
 \begin{figure}[H]
   \centering
@@ -234,7 +239,7 @@ LZW 是一种典型的自适应字典压缩算法。对于 8 位灰度图像，�
 
 原图灰度主要集中在中低灰度区间，同时覆盖了较宽的灰度范围。该分布决定了图像熵较高，但局部像素序列仍存在可被 LZW 字典利用的重复结构。
 
-\subsection{bpp、熵与同一性验证}
+\subsection*{4.3\quad bpp、熵与同一性验证}
 
 \begin{figure}[H]
   \centering
@@ -261,7 +266,7 @@ $I_s$ 与 $I_d$ 是否相同 & YES \\
 \caption{实验三运行结果汇总}
 \end{table}
 
-\subsection{输出文件}
+\subsection*{4.4\quad 输出文件}
 
 \begin{table}[H]
 \centering
@@ -279,13 +284,15 @@ $I_s$ 与 $I_d$ 是否相同 & YES \\
 \end{table}
 
 %=====================================================
-\section{结论}
+\section*{五、结论}
+\addcontentsline{toc}{section}{五、结论}
 %=====================================================
 
 本实验完成了灰度图像的 LZW 编码与解码。程序以 \texttt{b8gray.bmp} 为输入生成 \texttt{C.dat}，再由该压缩文件恢复出 \texttt{Id.bmp}。逐像素比较结果表明 $I_s$ 与 $I_d$ 完全一致，验证了算法实现的无损性。实验测得仅码流 bpp 为 $5.596430$ bit/pixel，包含文件头后的 \texttt{C.dat} bpp 为 $5.600275$ bit/pixel，均低于原图单像素灰度熵 $7.528544$ bit/pixel，说明 LZW 字典有效利用了图像像素序列中的上下文重复结构。
 
 %=====================================================
-\section{附录：函数代码}
+\section*{六、附录：函数代码}
+\addcontentsline{toc}{section}{六、附录}
 %=====================================================
 
 以下为除 \texttt{HXLBMPFILE} 类代码外的实验三主要代码。

@@ -1,65 +1,67 @@
-from pathlib import Path
-from PIL import Image, ImageChops, ImageDraw, ImageFont
+"""Generate report figures for LZW coding experiment (Task 3)."""
 
+from pathlib import Path
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+import numpy as np
+from PIL import Image, ImageChops
 
 ROOT = Path(__file__).resolve().parent
 FIG = ROOT / "figures"
 FIG.mkdir(exist_ok=True)
 
-BLUE = (33, 98, 155)
-VERMILION = (188, 80, 64)
-GREEN = (52, 128, 112)
-INK = (35, 39, 42)
-GRAY = (140, 148, 156)
-LIGHT = (246, 248, 250)
-GRID = (222, 226, 230)
-WHITE = (255, 255, 255)
+BLUE = "#21629B"
+VERMILION = "#BC5040"
+GREEN = "#348070"
+INK = "#23272A"
+GRAY = "#6B7280"
+LIGHT = "#F6F8FA"
+GRID = "#D9DEE5"
 
-
-def font(size=28, bold=False):
-    candidates = [
-        "C:/Windows/Fonts/timesbd.ttf" if bold else "C:/Windows/Fonts/times.ttf",
-        "C:/Windows/Fonts/arialbd.ttf" if bold else "C:/Windows/Fonts/arial.ttf",
-        "C:/Windows/Fonts/simhei.ttf",
-    ]
-    for path in candidates:
-        try:
-            return ImageFont.truetype(path, size)
-        except OSError:
-            pass
-    return ImageFont.load_default()
-
-
-def fit_image(path, box):
-    img = Image.open(path).convert("RGB")
-    img.thumbnail(box, Image.Resampling.LANCZOS)
-    canvas = Image.new("RGB", box, WHITE)
-    x = (box[0] - img.width) // 2
-    y = (box[1] - img.height) // 2
-    canvas.paste(img, (x, y))
-    return canvas
+plt.rcParams.update({
+    "font.family": "serif",
+    "font.size": 12,
+    "axes.edgecolor": GRID,
+    "axes.facecolor": LIGHT,
+    "axes.labelcolor": INK,
+    "text.color": INK,
+    "xtick.color": INK,
+    "ytick.color": INK,
+    "figure.facecolor": "white",
+    "savefig.facecolor": "white",
+    "savefig.dpi": 200,
+})
 
 
 def image_panel():
-    w, h = 1800, 860
-    canvas = Image.new("RGB", (w, h), WHITE)
-    d = ImageDraw.Draw(canvas)
+    src = Image.open(ROOT / "b8gray.bmp").convert("L")
+    dec = Image.open(ROOT / "Id.bmp").convert("L")
 
-    d.text((60, 38), "LZW Reconstruction Check", fill=INK, font=font(44, True))
-    d.text((60, 96), "Original grayscale image and image decoded from C.dat", fill=GRAY, font=font(26))
+    fig, axes = plt.subplots(1, 2, figsize=(14, 7))
+    fig.subplots_adjust(top=0.86, wspace=0.08)
+    fig.text(0.04, 0.96, "LZW Reconstruction Check",
+             fontsize=20, fontweight="bold", va="top")
+    fig.text(0.04, 0.91, "Original grayscale image and image decoded from C.dat",
+             fontsize=11, color=GRAY, va="top")
 
-    box_w, box_h = 760, 610
-    left = fit_image(ROOT / "b8gray.bmp", (box_w, box_h))
-    right = fit_image(ROOT / "Id.bmp", (box_w, box_h))
-    canvas.paste(left, (60, 170))
-    canvas.paste(right, (980, 170))
+    for ax, img, title, color in [
+        (axes[0], src, r"$I_s$: b8gray.bmp", BLUE),
+        (axes[1], dec, r"$I_d$: decoded image", GREEN),
+    ]:
+        ax.imshow(np.array(img), cmap="gray", vmin=0, vmax=255)
+        ax.set_title(title, fontsize=13, fontweight="bold", color="white",
+                     backgroundcolor=color, pad=8)
+        ax.set_xticks([])
+        ax.set_yticks([])
+        for spine in ax.spines.values():
+            spine.set_color(GRID)
+            spine.set_linewidth(1.5)
 
-    for x, title, color in [(60, "Is: b8gray.bmp", BLUE), (980, "Id: decoded image", GREEN)]:
-        d.rectangle((x, 170, x + box_w, 170 + box_h), outline=(210, 215, 220), width=2)
-        d.rectangle((x, 795, x + box_w, 835), fill=color)
-        d.text((x + 18, 801), title, fill=WHITE, font=font(24, True))
-
-    canvas.save(FIG / "fig_input_decoded.png", quality=95)
+    fig.savefig(FIG / "fig_input_decoded.png", bbox_inches="tight")
+    plt.close(fig)
 
 
 def histogram_panel():
@@ -67,97 +69,116 @@ def histogram_panel():
     hist = img.histogram()
     total = sum(hist)
     probs = [v / total for v in hist]
-    max_p = max(probs)
 
-    w, h = 1800, 760
-    margin_l, margin_r, margin_t, margin_b = 130, 60, 110, 120
-    plot_w = w - margin_l - margin_r
-    plot_h = h - margin_t - margin_b
+    fig, ax = plt.subplots(figsize=(14, 6.5))
+    fig.subplots_adjust(top=0.84, bottom=0.13)
+    fig.text(0.06, 0.97, "Normalized Gray-Level Histogram",
+             fontsize=20, fontweight="bold", va="top")
+    fig.text(0.06, 0.91,
+             "Distribution of the source image; the decoded image is identical pixel-by-pixel",
+             fontsize=11, color=GRAY, va="top")
 
-    canvas = Image.new("RGB", (w, h), WHITE)
-    d = ImageDraw.Draw(canvas)
-    d.text((60, 36), "Normalized Gray-Level Histogram", fill=INK, font=font(44, True))
-    d.text((60, 92), "Distribution of the source image; the decoded image is identical pixel-by-pixel", fill=GRAY, font=font(25))
+    levels = np.arange(256)
+    colors = [BLUE if i < 160 else VERMILION for i in levels]
+    ax.bar(levels, probs, width=1.0, color=colors, edgecolor="none")
 
-    x0, y0 = margin_l, margin_t
-    x1, y1 = margin_l + plot_w, margin_t + plot_h
-    d.rectangle((x0, y0, x1, y1), fill=LIGHT, outline=(205, 210, 216), width=2)
+    ax.set_xlim(-1, 256)
+    ax.set_ylim(0, max(probs) * 1.08)
+    ax.set_xlabel("Gray level", fontsize=13, fontweight="bold")
+    ax.set_ylabel("Probability", fontsize=13, fontweight="bold")
+    ax.xaxis.set_major_locator(ticker.FixedLocator([0, 64, 128, 192, 255]))
+    ax.yaxis.set_major_formatter(ticker.FormatStrFormatter("%.3f"))
+    ax.grid(axis="y", color=GRID, linewidth=0.8)
+    ax.set_axisbelow(True)
 
-    for i in range(6):
-        y = y1 - int(plot_h * i / 5)
-        d.line((x0, y, x1, y), fill=GRID, width=1)
-        value = max_p * i / 5
-        d.text((36, y - 14), f"{value:.3f}", fill=GRAY, font=font(20))
-
-    bar_w = plot_w / 256.0
-    for i, p in enumerate(probs):
-        x = x0 + i * bar_w
-        y = y1 - int(p / max_p * plot_h)
-        color = BLUE if i < 160 else VERMILION
-        d.rectangle((int(x), y, int(x + max(1, bar_w)), y1), fill=color)
-
-    for tick in [0, 64, 128, 192, 255]:
-        x = x0 + int(plot_w * tick / 255)
-        d.line((x, y1, x, y1 + 8), fill=INK, width=2)
-        d.text((x - 18, y1 + 18), str(tick), fill=INK, font=font(22))
-    d.text((w // 2 - 70, h - 52), "Gray level", fill=INK, font=font(24, True))
-    d.text((20, h // 2), "Probability", fill=INK, font=font(24, True))
-
-    canvas.save(FIG / "fig_histogram_source.png", quality=95)
+    fig.savefig(FIG / "fig_histogram_source.png", bbox_inches="tight")
+    plt.close(fig)
 
 
 def metrics_panel():
-    w, h = 1600, 720
-    canvas = Image.new("RGB", (w, h), WHITE)
-    d = ImageDraw.Draw(canvas)
-    d.text((60, 38), "Coding Efficiency and Information Content", fill=INK, font=font(42, True))
-    d.text((60, 92), "Lower bpp indicates a shorter representation; entropy is the source uncertainty", fill=GRAY, font=font(24))
-
     labels = ["LZW codes", "C.dat file", "Entropy"]
     values = [5.596430, 5.600275, 7.528544]
     colors = [BLUE, GREEN, VERMILION]
-    max_v = 8.0
 
-    x0, y0 = 180, 155
-    bar_h, gap = 95, 64
-    scale = 1180 / max_v
-    for idx, (label, value, color) in enumerate(zip(labels, values, colors)):
-        y = y0 + idx * (bar_h + gap)
-        d.text((60, y + 28), label, fill=INK, font=font(27, True))
-        d.rectangle((x0, y, x0 + int(max_v * scale), y + bar_h), fill=LIGHT, outline=(214, 218, 224), width=1)
-        d.rectangle((x0, y, x0 + int(value * scale), y + bar_h), fill=color)
-        d.text((x0 + int(value * scale) + 18, y + 28), f"{value:.6f} bit/pixel", fill=INK, font=font(26))
+    fig, ax = plt.subplots(figsize=(12, 6))
+    fig.subplots_adjust(top=0.83, left=0.14, bottom=0.13)
+    fig.text(0.06, 0.97, "Coding Efficiency and Information Content",
+             fontsize=20, fontweight="bold", va="top")
+    fig.text(0.06, 0.91,
+             "Lower bpp indicates a shorter representation; entropy is the source uncertainty",
+             fontsize=11, color=GRAY, va="top")
 
-    for tick in range(0, 9, 2):
-        x = x0 + int(tick * scale)
-        d.line((x, 630, x, 642), fill=INK, width=2)
-        d.text((x - 10, 650), str(tick), fill=INK, font=font(22))
-    d.text((x0 + 500, 650), "bits per pixel", fill=GRAY, font=font(22))
+    y_pos = np.arange(len(labels))[::-1]
+    bars = ax.barh(y_pos, values, height=0.55, color=colors, edgecolor="none")
 
-    canvas.save(FIG / "fig_metrics.png", quality=95)
+    ax.set_xlim(0, 9)
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(labels, fontsize=13, fontweight="bold")
+    ax.set_xlabel("bits per pixel", fontsize=12, color=GRAY)
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(2))
+    ax.grid(axis="x", color=GRID, linewidth=0.8)
+    ax.set_axisbelow(True)
+
+    for bar, val in zip(bars, values):
+        ax.text(bar.get_width() + 0.15, bar.get_y() + bar.get_height() / 2,
+                f"{val:.6f} bit/pixel", va="center", fontsize=12)
+
+    for spine in ("top", "right"):
+        ax.spines[spine].set_visible(False)
+
+    fig.savefig(FIG / "fig_metrics.png", bbox_inches="tight")
+    plt.close(fig)
 
 
 def difference_panel():
     src = Image.open(ROOT / "b8gray.bmp").convert("L")
     dec = Image.open(ROOT / "Id.bmp").convert("L")
     diff = ImageChops.difference(src, dec)
-    diff_rgb = Image.new("RGB", diff.size, (255, 255, 255))
-    diff_rgb.putalpha(diff)
-    nonzero = sum(1 for v in diff.getdata() if v)
+    nonzero = int(np.count_nonzero(np.array(diff)))
 
-    w, h = 1300, 520
-    canvas = Image.new("RGB", (w, h), WHITE)
-    d = ImageDraw.Draw(canvas)
-    d.text((60, 42), "Pixel Difference Map", fill=INK, font=font(42, True))
-    d.text((60, 96), f"Non-zero difference pixels: {nonzero}", fill=GRAY, font=font(26))
-    d.rectangle((60, 165, 1240, 420), fill=LIGHT, outline=(215, 220, 226), width=2)
-    d.text((470, 260), "All pixels are identical", fill=GREEN, font=font(44, True))
-    d.text((505, 320), "Is == Id: YES", fill=INK, font=font(30, True))
-    canvas.save(FIG / "fig_difference.png", quality=95)
+    diff_arr = np.array(diff)
+
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6),
+                             gridspec_kw={"width_ratios": [2, 1]})
+    fig.subplots_adjust(top=0.85, wspace=0.12)
+    fig.text(0.04, 0.97, "Pixel Difference Map",
+             fontsize=20, fontweight="bold", va="top")
+    fig.text(0.04, 0.91, f"Non-zero difference pixels: {nonzero}",
+             fontsize=12, color=GRAY, va="top")
+
+    ax0 = axes[0]
+    ax0.imshow(diff_arr, cmap="hot", vmin=0, vmax=max(1, diff_arr.max()))
+    ax0.set_title(r"$|I_s - I_d|$ (amplified)", fontsize=13, fontweight="bold")
+    ax0.set_xticks([])
+    ax0.set_yticks([])
+    for spine in ax0.spines.values():
+        spine.set_color(GRID)
+
+    ax1 = axes[1]
+    ax1.set_facecolor(LIGHT)
+    ax1.text(0.5, 0.55, "All pixels are identical",
+             fontsize=18, fontweight="bold", color=GREEN,
+             ha="center", va="center", transform=ax1.transAxes)
+    ax1.text(0.5, 0.35, r"$I_s \equiv I_d$: YES",
+             fontsize=15, fontweight="bold", color=INK,
+             ha="center", va="center", transform=ax1.transAxes)
+    ax1.set_xticks([])
+    ax1.set_yticks([])
+    for spine in ax1.spines.values():
+        spine.set_color(GRID)
+        spine.set_linewidth(1.5)
+
+    fig.savefig(FIG / "fig_difference.png", bbox_inches="tight")
+    plt.close(fig)
 
 
 if __name__ == "__main__":
     image_panel()
+    print("  -> fig_input_decoded.png")
     histogram_panel()
+    print("  -> fig_histogram_source.png")
     metrics_panel()
+    print("  -> fig_metrics.png")
     difference_panel()
+    print("  -> fig_difference.png")
+    print("Done.")
