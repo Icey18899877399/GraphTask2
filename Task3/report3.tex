@@ -217,15 +217,15 @@ LZW 是一种典型的自适应字典压缩算法。对于 8 位灰度图像，�
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.96\textwidth]{figures/fig_input_decoded.png}
-  \caption{原图 $I_s$ 与由 \texttt{C.dat} 解码得到的图像 $I_d$}
+  \caption{(a) 原图 $I_s$（\texttt{b8gray.bmp}）与 (b) 由 \texttt{C.dat} 解码得到的图像 $I_d$。红色矩形区域为放大对比细节。}
 \end{figure}
 
-从视觉上看，解码图像与原图一致。进一步的逐像素验证见图 \ref{fig:diff}，差分像素数为 0，说明本实验实现的 LZW 编解码过程为无损恢复。
+从视觉上看，解码图像与原图完全一致。进一步对局部细节区域进行逐像素验证（图~\ref{fig:diff}），差分像素数为 0（$\Delta=0$），证实本实验 LZW 编解码为严格无损恢复。
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.82\textwidth]{figures/fig_difference.png}
-  \caption{原图与解码图的差分验证}
+  \includegraphics[width=0.96\textwidth]{figures/fig_difference.png}
+  \caption{局部细节放大对比：(a)~原图 $I_s$ 裁剪区域，(b)~解码图 $I_d$ 同一区域，(c)~逐像素差分 $|I_s-I_d|$，$\Delta=0$ 表明完全无损。}
   \label{fig:diff}
 \end{figure}
 
@@ -233,7 +233,7 @@ LZW 是一种典型的自适应字典压缩算法。对于 8 位灰度图像，�
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.96\textwidth]{figures/fig_histogram_source.png}
+  \includegraphics[width=0.80\textwidth]{figures/fig_histogram_source.png}
   \caption{原图 $I_s$ 的归一化灰度直方图}
 \end{figure}
 
@@ -243,8 +243,8 @@ LZW 是一种典型的自适应字典压缩算法。对于 8 位灰度图像，�
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.90\textwidth]{figures/fig_metrics.png}
-  \caption{LZW 编码 bpp 与原图熵对比}
+  \includegraphics[width=0.78\textwidth]{figures/fig_metrics.png}
+  \caption{LZW 编码 bpp 与原图信息熵 $H(I_s)$ 对比。$\mathrm{bpp_{code}}$ 和 $\mathrm{bpp_{file}}$ 均低于信息熵，说明 LZW 字典有效利用了像素序列的冗余。}
 \end{figure}
 
 \begin{table}[H]
