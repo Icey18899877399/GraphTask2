@@ -1,0 +1,11 @@
+LZW image coding experiment
+Input image: b8gray.bmp
+Compressed file: C.dat
+Decoded image: Id.bmp
+Image size: 1314 x 1666
+Original pixels: 2189124
+LZW code count: 765705
+Encoded bpp (codes only): 5.596430
+Encoded bpp (C.dat file): 5.600275
+Original entropy: 7.528544 bit/pixel
+Is == Id: YES
