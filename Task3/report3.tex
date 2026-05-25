@@ -220,12 +220,12 @@ LZW 是一种典型的自适应字典压缩算法。对于 8 位灰度图像，�
   \caption{(a) 原图 $I_s$（\texttt{b8gray.bmp}）与 (b) 由 \texttt{C.dat} 解码得到的图像 $I_d$。红色矩形区域为放大对比细节。}
 \end{figure}
 
-从视觉上看，解码图像与原图完全一致。图~\ref{fig:diff} 给出了 $I_s$ 与 $I_d$ 的像素值联合密度图，所有点严格分布在 $y=x$ 对角线上，证实 LZW 编解码为严格无损恢复。
+从视觉上看，解码图像与原图完全一致。图~\ref{fig:diff} 进一步给出了局部细节与残差分布验证：左、中两幅为同一区域的原图与解码图裁剪结果，右侧为全图像素残差 $|I_s-I_d|$ 的分布。残差直方图中所有像素均集中在 0，且 $\max\Delta=0$、$N_{\Delta>0}=0$、$\mathrm{MSE}=0$，说明 LZW 编解码实现了严格无损恢复。
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.48\textwidth]{figures/fig_difference.png}
-  \caption{$I_s$ 与 $I_d$ 像素值相关性密度图。所有像素对严格落在 $y=x$ 对角线上，颜色表示该灰度级的像素密度，验证了无损重建。}
+  \includegraphics[width=0.96\textwidth]{figures/fig_difference.png}
+  \caption{$I_s$ 与 $I_d$ 的局部裁剪及残差分布验证。(a) 原图局部区域；(b) 解码图同一区域；(c) 全图残差 $|I_s-I_d|$ 的像素数分布。残差全部位于 0，验证了解码结果与原图逐像素一致。}
   \label{fig:diff}
 \end{figure}
 
