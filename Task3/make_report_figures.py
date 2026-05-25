@@ -153,46 +153,37 @@ def metrics_panel():
 
 
 def difference_panel():
-    """Zoom-in comparison proving lossless reconstruction."""
-    src = np.array(Image.open(ROOT / "b8gray.bmp").convert("L"))
-    dec = np.array(Image.open(ROOT / "Id.bmp").convert("L"))
-    diff = np.abs(src.astype(np.int16) - dec.astype(np.int16)).astype(np.uint8)
+    """Pixel-value correlation density plot proving lossless reconstruction."""
+    src = np.array(Image.open(ROOT / "b8gray.bmp").convert("L")).ravel()
+    dec = np.array(Image.open(ROOT / "Id.bmp").convert("L")).ravel()
 
-    # crop a detail region
-    zy, zx, zs = 400, 350, 260
-    src_crop  = src[zy:zy+zs, zx:zx+zs]
-    dec_crop  = dec[zy:zy+zs, zx:zx+zs]
-    diff_crop = diff[zy:zy+zs, zx:zx+zs]
+    fig, ax = plt.subplots(figsize=(4.0, 3.8))
 
-    fig, axes = plt.subplots(1, 3, figsize=(7.2, 2.8))
-    fig.subplots_adjust(wspace=0.10)
+    # 2D histogram — mask zeros so background stays white
+    h, xedges, yedges = np.histogram2d(src, dec, bins=256,
+                                        range=[[0, 255], [0, 255]])
+    h_masked = np.ma.masked_where(h.T == 0, np.log10(h.T + 1))
 
-    panels = [
-        (axes[0], src_crop,  "(a)", "gray",  None),
-        (axes[1], dec_crop,  "(b)", "gray",  None),
-        (axes[2], diff_crop, "(c)", "hot",   0),
-    ]
+    from matplotlib.colors import LinearSegmentedColormap
+    cmap = LinearSegmentedColormap.from_list(
+        "density", [C_LGRAY, C_BLUE, C_GREEN, C_GOLD], N=256)
+    cmap.set_bad("white")
 
-    for ax, crop, label, cmap, vmin in panels:
-        kw = dict(cmap=cmap, interpolation="bilinear")
-        if vmin is not None:
-            kw.update(vmin=0, vmax=max(1, diff_crop.max()))
-        else:
-            kw.update(vmin=0, vmax=255)
-        ax.imshow(crop, **kw)
-        ax.set_xticks([])
-        ax.set_yticks([])
-        for spine in ax.spines.values():
-            spine.set_linewidth(0.4)
-            spine.set_color(C_MGRAY)
-        _label(ax, label)
+    ax.imshow(h_masked, origin="lower", extent=[0, 255, 0, 255],
+              cmap=cmap, aspect="equal", interpolation="nearest")
 
-    # annotate the difference panel
-    axes[2].text(0.5, 0.5, r"$\Delta=0$", transform=axes[2].transAxes,
-                 fontsize=16, fontweight="bold", color="white",
-                 ha="center", va="center",
-                 bbox=dict(boxstyle="round,pad=0.3", facecolor=C_GREEN,
-                           edgecolor="none", alpha=0.85))
+    # y=x reference
+    ax.plot([0, 255], [0, 255], color=C_RED, linewidth=0.5,
+            linestyle="--", alpha=0.6)
+
+    ax.set_xlim(0, 255)
+    ax.set_ylim(0, 255)
+    ax.set_xlabel(r"$I_s$ pixel value")
+    ax.set_ylabel(r"$I_d$ pixel value")
+    ax.xaxis.set_major_locator(ticker.FixedLocator([0, 64, 128, 192, 255]))
+    ax.yaxis.set_major_locator(ticker.FixedLocator([0, 64, 128, 192, 255]))
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
 
     fig.savefig(FIG / "fig_difference.png")
     plt.close(fig)

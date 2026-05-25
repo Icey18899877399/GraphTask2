@@ -220,12 +220,12 @@ LZW 是一种典型的自适应字典压缩算法。对于 8 位灰度图像，�
   \caption{(a) 原图 $I_s$（\texttt{b8gray.bmp}）与 (b) 由 \texttt{C.dat} 解码得到的图像 $I_d$。红色矩形区域为放大对比细节。}
 \end{figure}
 
-从视觉上看，解码图像与原图完全一致。进一步对局部细节区域进行逐像素验证（图~\ref{fig:diff}），差分像素数为 0（$\Delta=0$），证实本实验 LZW 编解码为严格无损恢复。
+从视觉上看，解码图像与原图完全一致。图~\ref{fig:diff} 给出了 $I_s$ 与 $I_d$ 的像素值联合密度图，所有点严格分布在 $y=x$ 对角线上，证实 LZW 编解码为严格无损恢复。
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.96\textwidth]{figures/fig_difference.png}
-  \caption{局部细节放大对比：(a)~原图 $I_s$ 裁剪区域，(b)~解码图 $I_d$ 同一区域，(c)~逐像素差分 $|I_s-I_d|$，$\Delta=0$ 表明完全无损。}
+  \includegraphics[width=0.48\textwidth]{figures/fig_difference.png}
+  \caption{$I_s$ 与 $I_d$ 像素值相关性密度图。所有像素对严格落在 $y=x$ 对角线上，颜色表示该灰度级的像素密度，验证了无损重建。}
   \label{fig:diff}
 \end{figure}
 
